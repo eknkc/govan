@@ -15,11 +15,13 @@ type (
 
 		Size() int
 		Written() bool
+		HeaderWritten() bool
 	}
 
 	responseWriter struct {
 		http.ResponseWriter
-		size int
+		size          int
+		headerWritten bool
 	}
 )
 
@@ -29,7 +31,8 @@ func (w *responseWriter) reset(writer http.ResponseWriter) {
 }
 
 func (w *responseWriter) WriteHeader(code int) {
-	w.WriteHeader(code)
+	w.ResponseWriter.WriteHeader(code)
+	w.headerWritten = true
 }
 
 func (w *responseWriter) Write(data []byte) (n int, err error) {
@@ -40,6 +43,10 @@ func (w *responseWriter) Write(data []byte) (n int, err error) {
 
 func (w *responseWriter) Size() int {
 	return w.size
+}
+
+func (w *responseWriter) HeaderWritten() bool {
+	return w.headerWritten
 }
 
 func (w *responseWriter) Written() bool {
