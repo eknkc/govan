@@ -162,21 +162,19 @@ func (g *Govan) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 
 	c.Next()
 
-	if c.Res.Written() {
-		return
-	}
-
-	if c.Status == 0 {
-		if c.body != nil {
-			c.Status = 200
-		} else {
-			c.Status = 404
+	if !c.Res.HeaderWritten() {
+		if c.Status == 0 {
+			if c.body != nil {
+				c.Status = 200
+			} else {
+				c.Status = 404
+			}
 		}
+
+		rw.WriteHeader(c.Status)
 	}
 
-	rw.WriteHeader(c.Status)
-
-	if c.body != nil {
+	if !c.Res.Written() && c.body != nil {
 		rw.Write(c.body)
 	}
 }
