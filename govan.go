@@ -10,9 +10,6 @@ import (
 
 	"github.com/eknkc/govan/inject"
 	"github.com/go-playground/form"
-	"github.com/julienschmidt/httprouter"
-	"github.com/leebenson/conform"
-	"gopkg.in/go-playground/validator.v9"
 )
 
 const govanCtxKey ctxKey = 1
@@ -64,15 +61,6 @@ func (c *Ctx) Bind(v interface{}) error {
 		if err := decoder.Decode(v, c.Req.Form); err != nil {
 			return err
 		}
-	}
-
-	validator := validator.New()
-	if err := validator.Struct(v); err != nil {
-		return err
-	}
-
-	if err := conform.Strings(v); err != nil {
-		return err
 	}
 
 	return nil
@@ -141,9 +129,8 @@ func (c *Ctx) serve(h Handler) error {
 
 type Govan struct {
 	inject.Injector
-	head   *middleware
-	log    *log.Logger
-	router *httprouter.Router
+	head *middleware
+	log  *log.Logger
 }
 
 func New() *Govan {
@@ -151,7 +138,6 @@ func New() *Govan {
 		Injector: inject.New(),
 		head:     &middleware{handler: topMiddleware},
 		log:      log.New(os.Stdout, "[govan] ", 0),
-		router:   httprouter.New(),
 	}
 
 	g.Map(g.log)
