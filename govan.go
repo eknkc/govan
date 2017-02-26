@@ -162,7 +162,7 @@ func (g *Govan) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 
 	c.Next()
 
-	if !c.Res.HeaderWritten() {
+	if !c.Res.Written() && !c.Res.HeaderWritten() {
 		if c.Status == 0 {
 			if c.body != nil {
 				c.Status = 200
