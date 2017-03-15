@@ -105,6 +105,6 @@ func (r *router) Routes() Handler {
 			cx.Status = 301
 		}
 
-		return nil
+		return cx.Next()
 	}
 }
