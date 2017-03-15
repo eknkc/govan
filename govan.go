@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"reflect"
+	"strings"
 
 	"github.com/eknkc/govan/inject"
 	"github.com/go-playground/form"
@@ -48,7 +49,7 @@ func (c *Ctx) Cookie(cookie *http.Cookie) *Ctx {
 }
 
 func (c *Ctx) Bind(v interface{}) error {
-	if c.Req.Header.Get("Content-Type") == "application/json" {
+	if strings.HasPrefix(c.Req.Header.Get("Content-Type"), "application/json") {
 		decoder := json.NewDecoder(c.Req.Body)
 		if err := decoder.Decode(v); err != nil {
 			return err
