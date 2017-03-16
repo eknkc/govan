@@ -180,9 +180,11 @@ func (g *Govan) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (n *Govan) Run(addr string) {
+func (n *Govan) Run(addr string) (*http.Server, error) {
 	n.log.Printf("listening on %s", addr)
-	n.log.Fatal(http.ListenAndServe(addr, n))
+	server := &http.Server{Addr: addr, Handler: n}
+	err := server.ListenAndServe()
+	return server, err
 }
 
 func (n *Govan) Use(handler ...Handler) {
