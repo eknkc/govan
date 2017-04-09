@@ -16,6 +16,7 @@ type (
 		Size() int
 		Written() bool
 		HeaderWritten() bool
+		Close()
 	}
 
 	responseWriter struct {
@@ -63,4 +64,7 @@ func (w *responseWriter) CloseNotify() <-chan bool {
 
 func (w *responseWriter) Flush() {
 	w.ResponseWriter.(http.Flusher).Flush()
+}
+
+func (w *responseWriter) Close() {
 }

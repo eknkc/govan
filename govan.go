@@ -172,12 +172,14 @@ func (g *Govan) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 			}
 		}
 
-		rw.WriteHeader(c.Status)
+		c.Res.WriteHeader(c.Status)
 	}
 
 	if !c.Res.Written() && c.body != nil {
-		rw.Write(c.body)
+		c.Res.Write(c.body)
 	}
+
+	c.Res.Close()
 }
 
 func (n *Govan) Run(addr string) (*http.Server, error) {
