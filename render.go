@@ -7,9 +7,9 @@ import (
 )
 
 type Render interface {
-	JSON(interface{}) error
-	HTML(name string, data interface{}) error
-	Text(data string) error
+	JSON(data interface{}, status ...int) error
+	HTML(name string, data interface{}, status ...int) error
+	Text(data string, status ...int) error
 	Redirect(url string, status ...int)
 }
 
@@ -26,26 +26,20 @@ type ctxRender struct {
 	ctx *Ctx
 }
 
-func (r *ctxRender) JSON(i interface{}) error {
-	return r.r.JSON(r.ctx.Res, 200, i)
+func (r *ctxRender) JSON(i interface{}, status ...int) error {
+	return r.r.JSON(r.ctx.Res, getStatus(200, status), i)
 }
 
-func (r *ctxRender) HTML(name string, i interface{}) error {
-	return r.r.HTML(r.ctx.Res, 200, name, i)
+func (r *ctxRender) HTML(name string, i interface{}, status ...int) error {
+	return r.r.HTML(r.ctx.Res, getStatus(200, status), name, i)
 }
 
-func (r *ctxRender) Text(data string) error {
-	return r.r.Text(r.ctx.Res, 200, data)
+func (r *ctxRender) Text(data string, status ...int) error {
+	return r.r.Text(r.ctx.Res, getStatus(200, status), data)
 }
 
 func (r *ctxRender) Redirect(url string, status ...int) {
-	s := 302
-
-	if len(status) > 0 {
-		s = status[0]
-	}
-
-	http.Redirect(r.ctx.Res, r.ctx.Req, url, s)
+	http.Redirect(r.ctx.Res, r.ctx.Req, url, getStatus(302, status))
 }
 
 func NewRenderProvider(opts ...RenderOptions) Handler {
@@ -62,4 +56,11 @@ func NewRenderProvider(opts ...RenderOptions) Handler {
 		c.MapTo(r, (*Render)(nil))
 		c.Next()
 	}
+}
+
+func getStatus(def int, st []int) int {
+	if len(st) > 0 {
+		def = st[0]
+	}
+	return def
 }
