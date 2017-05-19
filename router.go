@@ -101,8 +101,7 @@ func (r *router) Routes() Handler {
 			} else {
 				cx.Req.URL.Path = path + "/"
 			}
-			cx.Header("Location", cx.Req.URL.String())
-			cx.Status = 301
+			http.Redirect(cx.Res, cx.Req, cx.Req.URL.String(), 301)
 		}
 
 		return cx.Next()

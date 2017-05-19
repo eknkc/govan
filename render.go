@@ -1,13 +1,9 @@
 package govan
 
 import (
-	"bytes"
-	"encoding/json"
-	"html/template"
-	"io/ioutil"
 	"net/http"
-	"os"
-	"path/filepath"
+
+	"github.com/unrolled/render"
 )
 
 type Render interface {
@@ -17,120 +13,48 @@ type Render interface {
 	Redirect(url string, status ...int)
 }
 
-type render struct {
-	tpl *template.Template
-}
-
-func (r *render) json(c *Ctx, i interface{}) error {
-	b, err := json.Marshal(i)
-
-	if err != nil {
-		return err
-	}
-
-	if c.Req.Header.Get("Content-Type") == "" {
-		c.Type("application/json")
-	}
-
-	c.Body(b)
-
-	return nil
-}
-
-func (r *render) html(c *Ctx, name string, binding interface{}) error {
-	buf := new(bytes.Buffer)
-
-	if err := r.tpl.ExecuteTemplate(buf, name, binding); err != nil {
-		return err
-	}
-
-	if c.Req.Header.Get("Content-Type") == "" {
-		c.Type("text/html")
-	}
-
-	c.Body(buf.Bytes())
-
-	return nil
-}
-
-func (r *render) text(c *Ctx, data string) error {
-	c.Type("text/plain").Body([]byte(data))
-	return nil
-}
-
-func (r *render) redirect(c *Ctx, url string, status ...int) {
-	if len(status) == 0 && c.Status == 0 {
-		c.Status = 302
-	} else if len(status) > 0 {
-		c.Status = status[0]
-	}
-
-	http.Redirect(c.Res, c.Req, url, c.Status)
+type renderer struct {
+	r *render.Render
 }
 
 type RenderOptions struct {
-	Directory string
-	Funcs     []template.FuncMap
+	render.Options
 }
 
 type ctxRender struct {
-	*render
+	*renderer
 	ctx *Ctx
 }
 
 func (r *ctxRender) JSON(i interface{}) error {
-	return r.json(r.ctx, i)
+	return r.r.JSON(r.ctx.Res, 200, i)
 }
 
 func (r *ctxRender) HTML(name string, i interface{}) error {
-	return r.html(r.ctx, name, i)
+	return r.r.HTML(r.ctx.Res, 200, name, i)
 }
 
 func (r *ctxRender) Text(data string) error {
-	return r.text(r.ctx, data)
+	return r.r.Text(r.ctx.Res, 200, data)
 }
 
 func (r *ctxRender) Redirect(url string, status ...int) {
-	r.redirect(r.ctx, url, status...)
+	s := 302
+
+	if len(status) > 0 {
+		s = status[0]
+	}
+
+	http.Redirect(r.ctx.Res, r.ctx.Req, url, s)
 }
 
 func NewRenderProvider(opts ...RenderOptions) Handler {
-	ren := &render{}
+	var ren *renderer
 
 	if len(opts) > 0 {
-		opt := opts[0]
-
-		if opt.Directory != "" {
-			tpl := template.New(opt.Directory)
-			template.Must(tpl.Parse("Govan"))
-
-			filepath.Walk(opt.Directory, func(path string, info os.FileInfo, err error) error {
-				r, err := filepath.Rel(opt.Directory, path)
-				if err != nil {
-					panic(err)
-				}
-				ext := filepath.Ext(r)
-				if ext == ".html" {
-					buf, err := ioutil.ReadFile(path)
-
-					if err != nil {
-						panic(err)
-					}
-
-					name := (r[0 : len(r)-len(ext)])
-					tmpl := tpl.New(filepath.ToSlash(name))
-
-					for _, funcs := range opt.Funcs {
-						tmpl.Funcs(funcs)
-					}
-
-					template.Must(tmpl.Parse(string(buf)))
-				}
-				return nil
-			})
-
-			ren.tpl = tpl
-		}
+		ren = &renderer{r: render.New(opts[0].Options)}
+	} else {
+		ren = &renderer{r: render.New()}
 	}
 
 	return func(c *Ctx) {

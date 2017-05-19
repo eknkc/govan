@@ -21,21 +21,14 @@ type Handler interface{}
 
 type Ctx struct {
 	inject.Injector
-	Res    ResponseWriter
-	Req    *http.Request
-	Status int
-	body   []byte
-	next   *middleware
-	err    error
+	Res  ResponseWriter
+	Req  *http.Request
+	next *middleware
+	err  error
 }
 
 func (c *Ctx) Header(header, value string) *Ctx {
 	c.Res.Header().Add(header, value)
-	return c
-}
-
-func (c *Ctx) Body(body []byte) *Ctx {
-	c.body = body
 	return c
 }
 
@@ -112,10 +105,6 @@ func (c *Ctx) serve(h Handler) error {
 	err = c.err
 
 	for _, val := range vals {
-		if c.Status == 0 && val.Kind() == reflect.Int {
-			c.Status = int(val.Int())
-		}
-
 		if val.Kind() == reflect.Interface && val.Type().Implements(errorInterface) {
 			if !val.IsNil() {
 				err = val.Interface().(error)
@@ -164,19 +153,7 @@ func (g *Govan) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	c.Next()
 
 	if !c.Res.Written() && !c.Res.HeaderWritten() {
-		if c.Status == 0 {
-			if c.body != nil {
-				c.Status = 200
-			} else {
-				c.Status = 404
-			}
-		}
-
-		c.Res.WriteHeader(c.Status)
-	}
-
-	if !c.Res.Written() && c.body != nil {
-		c.Res.Write(c.body)
+		c.Res.WriteHeader(404)
 	}
 
 	c.Res.Close()
@@ -212,13 +189,13 @@ type middleware struct {
 }
 
 func topMiddleware(c *Ctx) {
-	if err := c.Next(); err != nil {
-		if c.body == nil {
-			c.body = []byte(err.Error())
-		}
+	err := c.Next()
 
-		if c.Status == 0 {
-			c.Status = 500
+	if !c.Res.HeaderWritten() {
+		if err != nil {
+			http.Error(c.Res, err.Error(), 500)
+		} else {
+			http.NotFound(c.Res, c.Req)
 		}
 	}
 }
