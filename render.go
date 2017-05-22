@@ -8,8 +8,11 @@ import (
 
 type Render interface {
 	JSON(data interface{}, status ...int) error
+	JSONTo(rw http.ResponseWriter, data interface{}, status ...int) error
 	HTML(name string, data interface{}, status ...int) error
+	HTMLTo(rw http.ResponseWriter, name string, data interface{}, status ...int) error
 	Text(data string, status ...int) error
+	TextTo(rw http.ResponseWriter, data string, status ...int) error
 	Redirect(url string, status ...int)
 }
 
