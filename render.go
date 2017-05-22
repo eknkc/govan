@@ -30,12 +30,24 @@ func (r *ctxRender) JSON(i interface{}, status ...int) error {
 	return r.r.JSON(r.ctx.Res, getStatus(200, status), i)
 }
 
+func (r *ctxRender) JSONTo(rw http.ResponseWriter, i interface{}, status ...int) error {
+	return r.r.JSON(rw, getStatus(200, status), i)
+}
+
 func (r *ctxRender) HTML(name string, i interface{}, status ...int) error {
 	return r.r.HTML(r.ctx.Res, getStatus(200, status), name, i)
 }
 
+func (r *ctxRender) HTMLTo(rw http.ResponseWriter, name string, i interface{}, status ...int) error {
+	return r.r.HTML(rw, getStatus(200, status), name, i)
+}
+
 func (r *ctxRender) Text(data string, status ...int) error {
 	return r.r.Text(r.ctx.Res, getStatus(200, status), data)
+}
+
+func (r *ctxRender) TextTo(rw http.ResponseWriter, data string, status ...int) error {
+	return r.r.Text(rw, getStatus(200, status), data)
 }
 
 func (r *ctxRender) Redirect(url string, status ...int) {
