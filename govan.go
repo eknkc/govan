@@ -152,7 +152,7 @@ func (g *Govan) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 
 	c.Next()
 
-	if !c.Res.Written() && !c.Res.HeaderWritten() {
+	if !c.Res.HeaderWritten() {
 		c.Res.WriteHeader(404)
 	}
 
