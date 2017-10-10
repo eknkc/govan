@@ -40,6 +40,10 @@ func (w *responseWriter) WriteHeader(code int) {
 }
 
 func (w *responseWriter) Write(data []byte) (n int, err error) {
+	if !w.headerWritten {
+		w.WriteHeader(http.StatusOK)
+	}
+
 	n, err = w.ResponseWriter.Write(data)
 	w.size += n
 	return
