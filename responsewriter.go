@@ -17,6 +17,7 @@ type (
 		Status() int
 		Written() bool
 		HeaderWritten() bool
+		Hijacked() bool
 		Close()
 	}
 
@@ -25,6 +26,7 @@ type (
 		status        int
 		size          int
 		headerWritten bool
+		hijacked      bool
 	}
 )
 
@@ -61,11 +63,16 @@ func (w *responseWriter) HeaderWritten() bool {
 	return w.headerWritten
 }
 
+func (w *responseWriter) Hijacked() bool {
+	return w.hijacked
+}
+
 func (w *responseWriter) Written() bool {
 	return w.size != 0
 }
 
 func (w *responseWriter) Hijack() (net.Conn, *bufio.ReadWriter, error) {
+	w.hijacked = true
 	return w.ResponseWriter.(http.Hijacker).Hijack()
 }
 
@@ -78,4 +85,5 @@ func (w *responseWriter) Flush() {
 }
 
 func (w *responseWriter) Close() {
+
 }

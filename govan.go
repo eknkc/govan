@@ -152,7 +152,7 @@ func (g *Govan) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 
 	c.Next()
 
-	if !c.Res.HeaderWritten() {
+	if !c.Res.HeaderWritten() && !c.Res.Hijacked() {
 		c.Res.WriteHeader(404)
 	}
 
@@ -191,7 +191,7 @@ type middleware struct {
 func topMiddleware(c *Ctx) {
 	err := c.Next()
 
-	if !c.Res.HeaderWritten() {
+	if !c.Res.HeaderWritten() && !c.Res.Hijacked() {
 		if err != nil {
 			http.Error(c.Res, err.Error(), 500)
 		} else {
