@@ -1,0 +1,4 @@
+github.com/eknkc/govan v0.0.0-20181017072603-facc690d75d3 h1:BkBIMBoit1/LnEm0XXu2sDWeHnvfmAtzr5yVd2XD1gY=
+github.com/eknkc/govan v0.0.0-20181017072603-facc690d75d3/go.mod h1:hZoyHtLb3skszO63iY6FrEKoByIGdem+BIELNf9rMDQ=
+github.com/julienschmidt/httprouter v1.2.0 h1:TDTW5Yz1mjftljbcKqRcrYhd4XeOoI98t+9HbQbYf7g=
+github.com/julienschmidt/httprouter v1.2.0/go.mod h1:SYymIcj16QtmaHHD7aYtjjsJG7VTCxuUUipMqKk8s4w=

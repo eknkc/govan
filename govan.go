@@ -2,15 +2,12 @@ package govan
 
 import (
 	"context"
-	"encoding/json"
 	"log"
 	"net/http"
 	"os"
 	"reflect"
-	"strings"
 
-	"github.com/eknkc/govan/inject"
-	"github.com/go-playground/form"
+	"github.com/eknkc/govan/v2/inject"
 )
 
 const govanCtxKey ctxKey = 1
@@ -39,25 +36,6 @@ func (c *Ctx) Type(mime string) *Ctx {
 func (c *Ctx) Cookie(cookie *http.Cookie) *Ctx {
 	http.SetCookie(c.Res, cookie)
 	return c
-}
-
-func (c *Ctx) Bind(v interface{}) error {
-	if strings.HasPrefix(c.Req.Header.Get("Content-Type"), "application/json") {
-		decoder := json.NewDecoder(c.Req.Body)
-		if err := decoder.Decode(v); err != nil {
-			return err
-		}
-	} else {
-		decoder := form.NewDecoder()
-		if err := c.Req.ParseForm(); err != nil {
-			return err
-		}
-		if err := decoder.Decode(v, c.Req.Form); err != nil {
-			return err
-		}
-	}
-
-	return nil
 }
 
 func (c *Ctx) Next() error {
